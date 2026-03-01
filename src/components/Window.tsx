@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 import { useOSStore } from '@/store/os'
 import Terminal from './Terminal'
 import SystemMonitor from './SystemMonitor'
@@ -32,7 +32,13 @@ export default function Window({ id, title, app, x, y, width, height, isMinimize
     const isFocused = focusedWindowId === id
     const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null)
     const [isClosing, setIsClosing] = useState(false)
+    const [isAnimatingIn, setIsAnimatingIn] = useState(true)
     const dotColor = APP_COLORS[app] || '#888'
+
+    useEffect(() => {
+        const t = setTimeout(() => setIsAnimatingIn(false), 20)
+        return () => clearTimeout(t)
+    }, [])
 
     const handleMouseDown = (e: React.MouseEvent) => {
         e.stopPropagation()
@@ -65,7 +71,18 @@ export default function Window({ id, title, app, x, y, width, height, isMinimize
         setTimeout(() => closeWindow(id), 200)
     }
 
-    if (isMinimized) return null
+    if (isMinimized) return (
+        <div
+            className="absolute rounded-xl"
+            style={{
+                left: x, top: y, width, height, zIndex,
+                opacity: 0,
+                transform: 'scale(0.1) translateY(100vh)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                pointerEvents: 'none'
+            }}
+        />
+    )
 
     return (
         <div
@@ -77,8 +94,10 @@ export default function Window({ id, title, app, x, y, width, height, isMinimize
                 width: isMaximized ? '100vw' : width,
                 height: isMaximized ? 'calc(100vh - 32px)' : height,
                 zIndex,
-                opacity: isClosing ? 0 : 1,
-                transform: isClosing ? 'scale(0.95)' : 'scale(1)',
+                opacity: isClosing ? 0 : isAnimatingIn ? 0 : 1,
+                transform: isClosing ? 'scale(0.95) translateY(10px)' :
+                    isAnimatingIn ? 'scale(0.95) translateY(10px)' :
+                        'scale(1) translateY(0)',
                 transition: 'opacity 0.2s ease, transform 0.2s ease, box-shadow 0.15s ease, border-color 0.15s ease',
                 background: 'linear-gradient(145deg, rgba(16,16,28,0.97) 0%, rgba(8,8,14,0.99) 100%)',
                 backdropFilter: 'blur(40px)',
@@ -132,7 +151,7 @@ export default function Window({ id, title, app, x, y, width, height, isMinimize
 
             {/* App content */}
             <div className="flex-1 overflow-hidden">
-                {app === 'terminal' && <Terminal />}
+                {app === 'terminal' && <TabbedTerminal />}
                 {app === 'monitor' && <SystemMonitor />}
                 {app === 'files' && <FileManager />}
                 {app === 'editor' && <CodeEditor />}
@@ -215,6 +234,71 @@ function PlaceholderApp({ label, icon, color }: { label: string, icon: string, c
             <div className="text-5xl">{icon}</div>
             <div className="font-mono text-sm" style={{ color: color }}>{label}</div>
             <div className="font-mono text-xs" style={{ color: '#444' }}>Coming soon...</div>
+        </div>
+    )
+}
+
+function TabbedTerminal() {
+    const [tabs, setTabs] = useState([{ id: 1, title: 'ksh — 1' }])
+    const [activeTab, setActiveTab] = useState(1)
+
+    const addTab = () => {
+        const id = Date.now()
+        setTabs(t => [...t, { id, title: `ksh — ${t.length + 1}` }])
+        setActiveTab(id)
+    }
+
+    const closeTab = (id: number, e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (tabs.length === 1) return
+        const next = tabs.filter(t => t.id !== id)
+        setTabs(next)
+        if (activeTab === id) setActiveTab(next[next.length - 1].id)
+    }
+
+    return (
+        <div className="w-full h-full flex flex-col">
+            {/* Tab bar */}
+            <div className="flex items-center shrink-0 overflow-x-auto"
+                style={{ background: 'rgba(0,0,0,0.6)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                {tabs.map(tab => (
+                    <div
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className="flex items-center gap-2 px-3 py-1.5 cursor-pointer shrink-0 transition-all font-mono text-xs"
+                        style={{
+                            background: activeTab === tab.id ? 'rgba(201,168,76,0.1)' : 'transparent',
+                            borderBottom: activeTab === tab.id ? '2px solid #C9A84C' : '2px solid transparent',
+                            color: activeTab === tab.id ? '#C9A84C' : '#555',
+                        }}
+                    >
+                        <span>⚡</span>
+                        <span>{tab.title}</span>
+                        {tabs.length > 1 && (
+                            <button
+                                onClick={e => closeTab(tab.id, e)}
+                                className="hover:text-white transition-colors"
+                                style={{ color: '#444', fontSize: 10, marginLeft: 2 }}
+                            >✕</button>
+                        )}
+                    </div>
+                ))}
+                <button
+                    onClick={addTab}
+                    className="px-3 py-1.5 font-mono text-xs transition-all hover:text-white shrink-0"
+                    style={{ color: '#444' }}
+                >+</button>
+            </div>
+
+            {/* Terminal instances */}
+            <div className="flex-1 overflow-hidden">
+                {tabs.map(tab => (
+                    <div key={tab.id} className="w-full h-full"
+                        style={{ display: activeTab === tab.id ? 'block' : 'none' }}>
+                        <Terminal />
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }
