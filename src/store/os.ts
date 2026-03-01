@@ -75,6 +75,7 @@ interface OSState {
     createINode: (path: string, type: 'file' | 'directory', content?: string) => void
     deleteINode: (path: string) => void
     updateINodeContent: (path: string, content: string) => void
+    tickKernel: () => void
 }
 
 // Build initial VFS with root structure
@@ -222,6 +223,22 @@ export const useOSStore = create<OSState>((set, get) => ({
             ...s.inodes,
             [path]: { ...s.inodes[path], content, size: content.length, modifiedAt: Date.now() }
         }
+    })),
+
+    tickKernel: () => set(s => ({
+        processes: s.processes.map(p => ({
+            ...p,
+            cpuPercent: p.pid <= 1
+                ? parseFloat((Math.random() * 0.3).toFixed(1))
+                : parseFloat((Math.random() * 15).toFixed(1)),
+            memoryMB: p.pid <= 1
+                ? p.memoryMB
+                : Math.max(4, p.memoryMB + Math.floor(Math.random() * 6) - 3),
+            state: p.pid <= 1 ? 'running' : (
+                Math.random() > 0.85 ? 'sleeping' :
+                    Math.random() > 0.95 ? 'stopped' : 'running'
+            ) as any
+        }))
     })),
 }))
 

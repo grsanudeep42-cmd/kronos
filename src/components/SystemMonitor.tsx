@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useOSStore } from '@/store/os'
 
 export default function SystemMonitor() {
-    const { processes, inodes, spawnProcess, killProcess } = useOSStore()
+    const { processes, inodes, spawnProcess, killProcess, tickKernel } = useOSStore()
     const [tick, setTick] = useState(0)
     const [cpuHistory, setCpuHistory] = useState<number[]>(Array(30).fill(0))
     const [memHistory, setMemHistory] = useState<number[]>(Array(30).fill(0))
@@ -12,14 +12,15 @@ export default function SystemMonitor() {
     // Live updates every second
     useEffect(() => {
         const interval = setInterval(() => {
+            tickKernel() // mutate store first so we read fresh values below
             setTick(t => t + 1)
-            const totalCpu = processes.reduce((a, p) => a + p.cpuPercent, 0)
-            const totalMem = processes.reduce((a, p) => a + p.memoryMB, 0)
+            const totalCpu = useOSStore.getState().processes.reduce((a, p) => a + p.cpuPercent, 0)
+            const totalMem = useOSStore.getState().processes.reduce((a, p) => a + p.memoryMB, 0)
             setCpuHistory(h => [...h.slice(1), Math.min(totalCpu, 100)])
             setMemHistory(h => [...h.slice(1), totalMem])
         }, 1000)
         return () => clearInterval(interval)
-    }, [processes])
+    }, [])
 
     const totalMem = processes.reduce((a, p) => a + p.memoryMB, 0)
     const totalCpu = processes.reduce((a, p) => a + p.cpuPercent, 0)
