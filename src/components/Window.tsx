@@ -189,12 +189,11 @@ function ResizeHandle({ id, onResize, currentWidth, currentHeight }: {
     return (
         <div
             onMouseDown={handleMouseDown}
-            className="absolute bottom-0 right-0 cursor-se-resize z-50"
-            style={{ width: 20, height: 20 }}
+            className="absolute cursor-se-resize z-50"
+            style={{ bottom: 0, right: 0, width: 20, height: 20 }}
         >
-            {/* Visible grip dots */}
             <svg width="12" height="12" viewBox="0 0 12 12"
-                style={{ position: 'absolute', bottom: 4, right: 4, opacity: 0.3 }}>
+                style={{ position: 'absolute', bottom: 4, right: 4, opacity: 0.25 }}>
                 <circle cx="10" cy="10" r="1.5" fill="white" />
                 <circle cx="6" cy="10" r="1.5" fill="white" />
                 <circle cx="10" cy="6" r="1.5" fill="white" />
