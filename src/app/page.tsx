@@ -46,10 +46,10 @@ function Clock() {
 }
 
 export default function Desktop() {
-  const { windows, setBooted } = useOSStore()
+  const { windows, setBooted, loadPersistedVFS } = useOSStore()
 
   useEffect(() => {
-    setBooted(true)
+    loadPersistedVFS().then(() => setBooted(true))
   }, [])
 
   return (

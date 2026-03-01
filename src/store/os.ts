@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { saveVFS, loadVFS, saveMeta, loadMeta } from '@/kernel/storage'
 
 export type ProcessState = 'running' | 'sleeping' | 'stopped' | 'zombie'
 
@@ -76,6 +77,7 @@ interface OSState {
     deleteINode: (path: string) => void
     updateINodeContent: (path: string, content: string) => void
     tickKernel: () => void
+    loadPersistedVFS: () => Promise<void>
 }
 
 // Build initial VFS with root structure
@@ -190,7 +192,10 @@ export const useOSStore = create<OSState>((set, get) => ({
         processes: s.processes.filter(p => p.pid !== pid)
     })),
 
-    setCurrentPath: (path) => set({ currentPath: path }),
+    setCurrentPath: (path) => {
+        saveMeta('currentPath', path)
+        set({ currentPath: path })
+    },
 
     getINode: (path) => get().inodes[pathToId(path)] || null,
 
@@ -206,7 +211,11 @@ export const useOSStore = create<OSState>((set, get) => ({
             createdAt: now, modifiedAt: now, accessedAt: now,
             parentId, content
         }
-        set(s => ({ inodes: { ...s.inodes, [path]: node } }))
+        set(s => {
+            const next = { ...s.inodes, [path]: node }
+            saveVFS(next) // persist immediately
+            return { inodes: next }
+        })
     },
 
     deleteINode: (path) => set(s => {
@@ -215,15 +224,18 @@ export const useOSStore = create<OSState>((set, get) => ({
         Object.keys(next).forEach(k => {
             if (k === path || k.startsWith(path + '/')) delete next[k]
         })
+        saveVFS(next) // persist immediately
         return { inodes: next }
     }),
 
-    updateINodeContent: (path, content) => set(s => ({
-        inodes: {
+    updateINodeContent: (path, content) => set(s => {
+        const next = {
             ...s.inodes,
             [path]: { ...s.inodes[path], content, size: content.length, modifiedAt: Date.now() }
         }
-    })),
+        saveVFS(next) // persist immediately
+        return { inodes: next }
+    }),
 
     tickKernel: () => set(s => ({
         processes: s.processes.map(p => ({
@@ -240,6 +252,15 @@ export const useOSStore = create<OSState>((set, get) => ({
             ) as any
         }))
     })),
+
+    loadPersistedVFS: async () => {
+        const saved = await loadVFS()
+        if (saved) {
+            set({ inodes: saved })
+            const path = await loadMeta('currentPath')
+            if (path) set({ currentPath: path })
+        }
+    },
 }))
 
 export { getChildrenOf, pathToId }
