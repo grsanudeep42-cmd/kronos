@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useOSStore } from '@/store/os'
 import Window from '@/components/Window'
 import Dock from '@/components/Dock'
+import ContextMenu from '@/components/ContextMenu'
 
 function StarField() {
   const [mounted, setMounted] = useState(false)
@@ -47,15 +48,22 @@ function Clock() {
 
 export default function Desktop() {
   const { windows, setBooted, loadPersistedVFS } = useOSStore()
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     loadPersistedVFS().then(() => setBooted(true))
   }, [])
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setContextMenu({ x: e.clientX, y: e.clientY })
+  }
+
   return (
     <main
       suppressHydrationWarning
       className="w-screen h-screen overflow-hidden relative"
+      onContextMenu={handleContextMenu}
       style={{
         background: 'radial-gradient(ellipse at 30% 40%, #0d0d2a 0%, #0a0a0f 50%, #0D0D0D 100%)'
       }}
@@ -86,6 +94,15 @@ export default function Desktop() {
 
       {/* Dock */}
       <Dock />
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
 
     </main>
   )
