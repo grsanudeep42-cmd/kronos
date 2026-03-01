@@ -4,6 +4,8 @@ import { useOSStore } from '@/store/os'
 import Terminal from './Terminal'
 import SystemMonitor from './SystemMonitor'
 import FileManager from './FileManager'
+import CodeEditor from './CodeEditor'
+
 
 interface WindowProps {
     id: string
@@ -133,7 +135,7 @@ export default function Window({ id, title, app, x, y, width, height, isMinimize
                 {app === 'terminal' && <Terminal />}
                 {app === 'monitor' && <SystemMonitor />}
                 {app === 'files' && <FileManager />}
-                {app === 'editor' && <PlaceholderApp label="Code Editor" icon="✏️" color="#A78BFA" />}
+                {app === 'editor' && <CodeEditor />}
             </div>
 
             {/* Resize handle */}
