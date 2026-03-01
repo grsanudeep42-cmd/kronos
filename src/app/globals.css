@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --kronos-bg: #0D0D0D;
+  --kronos-gold: #C9A84C;
+  --kronos-purple: #7B61FF;
+  --kronos-green: #4ADE80;
+  --kronos-red: #F87171;
+  --kronos-text: #E2E2E2;
+  --kronos-text-dim: #888888;
+  --kronos-glass: rgba(255, 255, 255, 0.05);
+  --kronos-glass-border: rgba(201, 168, 76, 0.2);
+  --kronos-window-bg: rgba(13, 13, 13, 0.85);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--kronos-bg);
+  color: var(--kronos-text);
+  font-family: 'Inter', sans-serif;
+  user-select: none;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--kronos-gold);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+/* Terminal font */
+.font-mono {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Glass effect */
+.glass {
+  background: var(--kronos-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--kronos-glass-border);
+}
+
+/* Gold glow for focused windows */
+.window-focused {
+  box-shadow: 0 0 0 1px var(--kronos-gold),
+    0 25px 50px rgba(0, 0, 0, 0.8),
+    0 0 80px rgba(201, 168, 76, 0.1);
+}
+
+.window-unfocused {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 25px 50px rgba(0, 0, 0, 0.6);
+}
+
+/* Boot sequence text */
+.boot-text {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--kronos-green);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* Selection */
+::selection {
+  background: rgba(123, 97, 255, 0.4);
+  color: white;
+}
+
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes bootSlide {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.window-chrome {
+  background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(10, 10, 15, 0.98));
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+}
