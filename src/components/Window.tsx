@@ -2,6 +2,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { useOSStore } from '@/store/os'
 import Terminal from './Terminal'
+import SystemMonitor from './SystemMonitor'
 
 interface WindowProps {
     id: string
@@ -114,11 +115,7 @@ export default function Window({ id, title, app, x, y, width, height, isMinimize
                         File Manager coming soon...
                     </div>
                 )}
-                {app === 'monitor' && (
-                    <div className="p-4 text-kronos-dim font-mono text-sm">
-                        System Monitor coming soon...
-                    </div>
-                )}
+                {app === 'monitor' && <SystemMonitor />}
             </div>
         </div>
     )
