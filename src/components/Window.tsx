@@ -3,6 +3,7 @@ import { useRef, useState, useCallback } from 'react'
 import { useOSStore } from '@/store/os'
 import Terminal from './Terminal'
 import SystemMonitor from './SystemMonitor'
+import FileManager from './FileManager'
 
 interface WindowProps {
     id: string
@@ -131,7 +132,7 @@ export default function Window({ id, title, app, x, y, width, height, isMinimize
             <div className="flex-1 overflow-hidden">
                 {app === 'terminal' && <Terminal />}
                 {app === 'monitor' && <SystemMonitor />}
-                {app === 'files' && <PlaceholderApp label="File Manager" icon="📁" color="#60A5FA" />}
+                {app === 'files' && <FileManager />}
                 {app === 'editor' && <PlaceholderApp label="Code Editor" icon="✏️" color="#A78BFA" />}
             </div>
 
